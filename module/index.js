@@ -68,7 +68,7 @@ class GitGraph {
 		})
 	}
 
-	async commit(options){		
+	async commit(options){
 		return await this.addObject({
 			tree: options.tree, // Hash
 			parents: options.parents, // [Hash] # Hash to the parent commits
