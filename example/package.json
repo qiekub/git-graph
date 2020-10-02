@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "node-env-file": "^0.1.8"
+  }
+}
