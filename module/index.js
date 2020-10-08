@@ -46,35 +46,68 @@ class GitGraph {
 		})
 	}
 
-	async addTree(options){
-		const edges = options.edges
-		const properties = options.properties
 
-		// add edges
-		const edge_hashs = []
-		for (const edge of edges) {
-			edge_hashs.push(await this.addObject({
-				label: edge.label,
-				to: edge.to,
-				permissions: edge.permissions,
-				properties: edge.properties,
-			}))
+
+	async addTree(options){
+		// add relations
+		const relations = options.relations || []
+		const relation_hashs = []
+		for (const relation of relations) {
+			const newRelationHash = await this.addTree({
+				...relation,
+				type: 'relation',
+			})
+			if (!!newRelationHash) {
+				relation_hashs.push(newRelationHash)
+			}
 		}
 
-		// add tree
-		return await this.addObject({
-			edges: edge_hashs,
-			properties: properties,
-		})
+
+		// add node (it's called a tree in git)
+		const type = (options.type === 'relation' ? 'relation' : 'node')
+
+		const newObject = {
+			type,
+			content: options.content,
+			relations: relation_hashs,
+		}
+		if (type === 'relation') {
+			newObject.label = options.label
+			newObject.permissions = options.permissions
+
+			// get toHash if not givin
+			let toHash = options.toHash
+			if (!(!!toHash)) {
+				if (options.toContent) {
+					toHash = await this.addTree({
+						content: options.toContent,
+					})
+				} else if (options.toDoc) {
+					toHash = await this.addTree(options.toDoc)
+				}
+			}
+			newObject.toHash = toHash
+		}
+
+		// add the object
+		let newObjectHash = null
+		try {
+			newObjectHash = await this.addObject(newObject)
+		} catch (error) {
+			console.error(error)
+		}
+		return newObjectHash
 	}
 
 	async commit(options){
-		return await this.addObject({
-			tree: options.tree, // Hash
-			parents: options.parents, // [Hash] # Hash to the parent commits
-			committer: options.committer, // String
-			message: options.message, // String
-			timestamp: options.timestamp, // DateTime
+		return await this.addTree({
+			content: {
+				node: options.node, // tree: options.tree, // Hash
+				parents: options.parents, // [Hash] # Hash to the parent commits
+				committer: options.committer, // String
+				message: options.message, // String
+				timestamp: options.timestamp, // DateTime
+			},
 		})
 	}
 

@@ -17,31 +17,45 @@ async function example() {
 		mongodb_options: {},
 	})
 
-	const helloworld_hash = await gg.addObject({
-		text: 'hello world',
+	const helloworld_hash = await gg.addTree({
+		content: {
+			text: 'hello world',
+		}
 	})
-	const permissions_hash = await gg.addObject({
-		yes: 'no',
+	const permissions_hash = await gg.addTree({
+		content: {
+			yes: 'no',
+		}
 	})
 
 	const tree_hash = await gg.addTree({
-		edges: [
+		content: {
+			hello: 'world',
+		},
+		relations: [
 			{
 				label: 'name',
-				to: helloworld_hash,
+				toHash: helloworld_hash,
 				permissions: permissions_hash,
-				properties: {},
+				content: {},
+				edges: [],
 			},
 			{
 				label: 'address',
-				to: helloworld_hash,
+				// toHash: helloworld_hash,
+				// toContent: {
+				// 	text: 'hello world',
+				// },
+				toDoc: {
+					content: {
+						text: 'hello world',
+					},
+				},
 				permissions: permissions_hash,
-				properties: {},
+				content: {},
+				edges: [],
 			}
 		],
-		properties: {
-			hello: 'world',
-		},
 	})
 
 	console.log('tree_hash:', tree_hash)
